@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MAX‘s Archive</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      font-family: 'Instrument Serif', serif;
+      background: #000;
+    }
+
+    button, input, .ui {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .hero {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+      background: #000;
+      color: #fff;
+    }
+
+    .video-layer {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 1000ms ease-in-out;
+    }
+
+    .video-layer.active {
+      opacity: 1;
+    }
+
+    .train-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      pointer-events: none;
+      animation: train-bob 3s ease-in-out infinite;
+      transform: scale(1.03);
+    }
+
+    @keyframes train-bob {
+      0%, 100% { transform: translateY(0) scale(1.03); }
+      50% { transform: translateY(-6px) scale(1.03); }
+    }
+
+    .shade {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 50% 38%, rgba(255,255,255,.08), transparent 28%),
+        linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.58));
+    }
+
+    .liquid-glass {
+      background: rgba(255, 255, 255, 0.01);
+      background-blend-mode: luminosity;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      border: none;
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .liquid-glass::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1.4px;
+      background: linear-gradient(180deg,
+        rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 20%,
+        rgba(255,255,255,0) 40%, rgba(255,255,255,0) 60%,
+        rgba(255,255,255,0.15) 80%, rgba(255,255,255,0.45) 100%);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    .content {
+      position: relative;
+      z-index: 2;
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+      padding: 24px;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .logo {
+      color: #fff;
+      font-size: 28px;
+      font-style: italic;
+      line-height: 1;
+    }
+
+    .nav-pill {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 8px;
+      border-radius: 999px;
+    }
+
+    .nav-pill a,
+    .nav-pill button {
+      color: rgba(255,255,255,.9);
+      text-decoration: none;
+      font-size: 14px;
+      background: transparent;
+      border: 0;
+      border-radius: 999px;
+      padding: 9px 14px;
+      cursor: pointer;
+      transition: color .2s ease, background .2s ease;
+    }
+
+    .nav-pill a:hover {
+      color: #fff;
+      background: rgba(255,255,255,.16);
+    }
+
+    .nav-pill .solid {
+      color: #171717;
+      background: #fff;
+      font-weight: 700;
+      padding-inline: 18px;
+    }
+
+    .mobile-toggle {
+      display: none;
+      width: 44px;
+      height: 44px;
+      border-radius: 999px;
+      border: 0;
+      color: #fff;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .icon {
+      position: absolute;
+      transition: transform 300ms cubic-bezier(0.4,0,0.2,1), opacity 300ms cubic-bezier(0.4,0,0.2,1);
+    }
+
+    .icon-x {
+      opacity: 0;
+      transform: rotate(-90deg) scale(.75);
+    }
+
+    .mobile-toggle.open .icon-menu {
+      opacity: 0;
+      transform: rotate(90deg) scale(.75);
+    }
+
+    .mobile-toggle.open .icon-x {
+      opacity: 1;
+      transform: rotate(0deg) scale(1);
+    }
+
+    .mobile-menu {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: grid;
+      place-items: center;
+      background: rgba(0,0,0,.6);
+      backdrop-filter: blur(6px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 500ms cubic-bezier(0.4,0,0.2,1);
+    }
+
+    .mobile-menu.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .mobile-menu-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .mobile-menu a,
+    .mobile-menu button {
+      color: #fff;
+      text-decoration: none;
+      font-size: 34px;
+      background: transparent;
+      border: 0;
+      transform: translateY(16px);
+      opacity: 0;
+      transition: opacity 500ms cubic-bezier(0.4,0,0.2,1), transform 500ms cubic-bezier(0.4,0,0.2,1);
+    }
+
+    .mobile-menu.open a,
+    .mobile-menu.open button {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .mobile-menu .cta {
+      margin-top: 18px;
+      padding: 13px 24px;
+      color: #111;
+      background: #fff;
+      border-radius: 999px;
+      font: 700 16px system-ui, sans-serif;
+      transform: translateY(16px) scale(.92);
+    }
+
+    .mobile-menu.open .cta {
+      transform: translateY(0) scale(1);
+    }
+
+    .hero-center {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 36px 0;
+      transition: color 700ms ease;
+    }
+
+    .dark-copy .hero-center {
+      color: #182C41;
+    }
+
+    .badge {
+      border-radius: 999px;
+      padding: 10px 16px;
+      color: currentColor;
+      font: 500 13px system-ui, sans-serif;
+      margin-bottom: 26px;
+    }
+
+    h1 {
+      max-width: 920px;
+      margin: 0;
+      font-size: clamp(42px, 8vw, 88px);
+      font-weight: 400;
+      line-height: 1.1;
+      letter-spacing: -0.04em;
+    }
+
+    .subtext {
+      max-width: 590px;
+      margin: 24px 0 0;
+      color: currentColor;
+      opacity: .78;
+      font: 400 16px/1.7 system-ui, sans-serif;
+    }
+
+    .personal-copy {
+      width: min(760px, calc(100% - 28px));
+      margin: 22px 0 0;
+      padding: 18px 20px;
+      border-radius: 12px;
+      color: currentColor;
+      font: 650 clamp(16px, 2.4vw, 24px)/1.65 system-ui, sans-serif;
+      text-align: center;
+    }
+
+    .email-pill {
+      width: min(100%, 390px);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px;
+      border-radius: 999px;
+      margin-top: 28px;
+    }
+
+    .email-pill input {
+      min-width: 0;
+      flex: 1;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: currentColor;
+      padding: 0 12px;
+      font-size: 14px;
+    }
+
+    .email-pill input::placeholder {
+      color: currentColor;
+      opacity: .72;
+    }
+
+    .email-pill button {
+      flex: 0 0 auto;
+      border: 0;
+      border-radius: 999px;
+      background: #fff;
+      color: #111;
+      padding: 11px 16px;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .switcher {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 14px;
+      margin-top: 30px;
+      font: 600 13px system-ui, sans-serif;
+    }
+
+    .switcher button {
+      border: 0;
+      border-bottom: 2px solid transparent;
+      background: transparent;
+      color: currentColor;
+      opacity: .5;
+      padding: 7px 2px;
+      cursor: pointer;
+      transition: opacity .2s ease, border-color .2s ease;
+    }
+
+    .switcher button:hover {
+      opacity: .8;
+    }
+
+    .switcher button.active {
+      opacity: 1;
+      border-bottom-color: currentColor;
+    }
+
+    .stats {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      color: rgba(255,255,255,.7);
+      font: 500 13px system-ui, sans-serif;
+      padding-bottom: 5px;
+    }
+
+    .divider {
+      opacity: .45;
+    }
+
+    @media (max-width: 767px) {
+      .content {
+        padding: 18px;
+      }
+
+      .nav-pill {
+        display: none;
+      }
+
+      .mobile-toggle {
+        display: flex;
+      }
+
+      h1 {
+        font-size: clamp(40px, 12vw, 58px);
+      }
+
+      .subtext {
+        font-size: 15px;
+      }
+
+      .email-pill {
+        max-width: 320px;
+        flex-direction: column;
+        border-radius: 22px;
+        padding: 11px;
+      }
+
+      .email-pill input,
+      .email-pill button {
+        width: 100%;
+        min-height: 42px;
+      }
+
+      .stats {
+        gap: 8px 12px;
+        font-size: 12px;
+      }
+
+      .divider {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <section class="hero" id="app">
+    <video class="video-layer active" src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260702_081127_0992a171-d3c6-4978-8213-0ec5df8b6d63.mp4" autoplay muted loop playsinline></video>
+    <video class="video-layer" src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260702_092026_dd05b805-ea0f-40b2-8c52-332b88502592.mp4" autoplay muted loop playsinline></video>
+    <video class="video-layer" src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260702_081042_df7202bf-bd80-4b2b-bbc6-1f09ba2870e9.mp4" autoplay muted loop playsinline></video>
+    <video class="video-layer" src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260702_080959_4cac5234-3573-464e-a5b7-76b94b8a7d61.mp4" autoplay muted loop playsinline></video>
+
+    <img class="train-overlay" src="https://soft-zoom-63098134.figma.site/_assets/v11/0b4a435b2df2747593c43d7a1c9b4578f7d8d90c.png" alt="">
+    <div class="shade"></div>
+
+    <div class="content">
+      <main class="hero-center">
+        <h1>MAX‘s<br>Archive</h1>
+        <p class="personal-copy liquid-glass ui">今年13岁，爱好是游戏画画和追剧。社恐，是一只常年宅在家里对未来失去希望的网虫（流泪<br>算是二次元吧看动漫但不多</p>
+        <div class="switcher ui" id="switcher"></div>
+      </main>
+    </div>
+  </section>
+
+  <script>
+    const labels = ["Golden Hour", "Still Water", "Deep Woods", "Quiet Dawn"];
+    const app = document.getElementById("app");
+    const videos = Array.from(document.querySelectorAll(".video-layer"));
+    const switcher = document.getElementById("switcher");
+    let activeVideo = 0;
+    let isTransitioning = false;
+
+    function setActive(index) {
+      if (index === activeVideo || isTransitioning) return;
+      isTransitioning = true;
+      videos[activeVideo].classList.remove("active");
+      videos[index].classList.add("active");
+      activeVideo = index;
+      app.classList.toggle("dark-copy", index === 2);
+      updateButtons();
+      setTimeout(() => { isTransitioning = false; }, 1000);
+    }
+
+    function updateButtons() {
+      Array.from(switcher.children).forEach((button, index) => {
+        button.classList.toggle("active", index === activeVideo);
+      });
+    }
+
+    labels.forEach((label, index) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = label;
+      button.addEventListener("click", () => setActive(index));
+      switcher.appendChild(button);
+    });
+    updateButtons();
+  </script>
+</body>
+</html>

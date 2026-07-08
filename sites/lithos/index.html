@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MAX Preview</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@1,400;1,500;1,600&display=swap');
+    * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    .font-playfair { font-family: 'Playfair Display', serif; }
+
+    @keyframes heroReveal { 0%{opacity:0;transform:translateY(28px);filter:blur(12px)} 100%{opacity:1;transform:translateY(0);filter:blur(0)} }
+    @keyframes heroFadeUp { 0%{opacity:0;transform:translateY(20px)} 100%{opacity:1;transform:translateY(0)} }
+    @keyframes heroZoom { 0%{transform:scale(1.12)} 100%{transform:scale(1)} }
+    .hero-anim { opacity:0; animation-fill-mode:forwards; animation-timing-function:cubic-bezier(0.16,1,0.3,1); }
+    .hero-reveal { animation-name:heroReveal; animation-duration:1.1s; }
+    .hero-fade { animation-name:heroFadeUp; animation-duration:1s; }
+    .hero-zoom { animation:heroZoom 1.8s cubic-bezier(0.16,1,0.3,1) forwards; }
+    @media (prefers-reduced-motion: reduce){ .hero-anim,.hero-zoom{ animation:none; opacity:1; } }
+
+    :root {
+      --orange: #e8702a;
+      --white-soft: rgba(255,255,255,.82);
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #fff;
+      letter-spacing: -0.02em;
+      color: white;
+    }
+
+    .hero {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+      background: #000;
+    }
+
+    .base,
+    .reveal {
+      position: absolute;
+      inset: 0;
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      pointer-events: none;
+    }
+
+    .base {
+      z-index: 10;
+      background-image: url("https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260609_195923_b0ba8ace-1d1d-4f2c-9a28-1ab84b330680.png&w=1280&q=85");
+    }
+
+    .reveal {
+      z-index: 30;
+      background-image: url("https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260609_201152_bba90a12-bf12-459f-91f0-51f237dbaf3b.png&w=1280&q=85");
+      -webkit-mask-size: 100% 100%;
+      mask-size: 100% 100%;
+    }
+
+    .shade {
+      position: absolute;
+      inset: 0;
+      z-index: 40;
+      background:
+        radial-gradient(circle at 50% 30%, rgba(0,0,0,.08), rgba(0,0,0,.62) 72%),
+        linear-gradient(180deg, rgba(0,0,0,.2), rgba(0,0,0,.68));
+      pointer-events: none;
+    }
+
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 20px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand svg {
+      width: 26px;
+      height: 26px;
+      fill: #fff;
+    }
+
+    .brand span {
+      font-size: 26px;
+      font-style: italic;
+      color: #fff;
+      font-family: 'Playfair Display', serif;
+    }
+
+    .nav-pill {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.3);
+      background: rgba(255,255,255,.2);
+      backdrop-filter: blur(16px);
+    }
+
+    .nav-pill button {
+      border: 0;
+      border-radius: 999px;
+      padding: 7px 16px;
+      background: transparent;
+      color: rgba(255,255,255,.8);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .nav-pill button.active {
+      background: white;
+      color: #171717;
+    }
+
+    .signup {
+      border: 0;
+      border-radius: 999px;
+      padding: 10px 24px;
+      background: white;
+      color: #171717;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .hamburger {
+      display: none;
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.28);
+      background: rgba(255,255,255,.14);
+      color: #fff;
+      font-size: 22px;
+    }
+
+    .heading {
+      position: absolute;
+      z-index: 50;
+      top: 14%;
+      left: 0;
+      right: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 0 20px;
+      pointer-events: none;
+    }
+
+    h1 {
+      margin: 0;
+      color: white;
+      line-height: .95;
+      font-size: clamp(52px, 10vw, 116px);
+      font-weight: 400;
+    }
+
+    h1 .line-one {
+      display: block;
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-weight: 400;
+      letter-spacing: -0.05em;
+    }
+
+    h1 .line-two {
+      display: block;
+      margin-top: -6px;
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-weight: 400;
+      letter-spacing: -0.05em;
+    }
+
+    .personal-card {
+      position: absolute;
+      z-index: 55;
+      left: 50%;
+      bottom: 15%;
+      transform: translateX(-50%);
+      width: min(760px, calc(100% - 36px));
+      padding: 22px 24px;
+      border: 1px solid rgba(255,255,255,.24);
+      border-radius: 8px;
+      background: rgba(0,0,0,.46);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 28px 80px rgba(0,0,0,.36);
+    }
+
+    .personal-card p {
+      margin: 0;
+      color: var(--white-soft);
+      font-size: clamp(18px, 3vw, 26px);
+      line-height: 1.65;
+      font-weight: 600;
+    }
+
+    .left-copy {
+      position: absolute;
+      z-index: 50;
+      left: 42px;
+      bottom: 56px;
+      max-width: 260px;
+    }
+
+    .right-copy {
+      position: absolute;
+      z-index: 50;
+      right: 46px;
+      bottom: 40px;
+      max-width: 270px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 18px;
+    }
+
+    .left-copy p,
+    .right-copy p {
+      margin: 0;
+      color: rgba(255,255,255,.8);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .start {
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 28px;
+      background: var(--orange);
+      color: white;
+      font-size: 14px;
+      font-weight: 700;
+      transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+    }
+
+    .start:hover {
+      transform: scale(1.03);
+      background: #d2611f;
+      box-shadow: 0 12px 30px rgba(232,112,42,.3);
+    }
+
+    @media (max-width: 760px) {
+      nav { padding: 16px; }
+      .nav-pill,
+      .signup,
+      .left-copy { display: none; }
+      .hamburger { display: block; }
+      .heading { top: 13%; }
+      .personal-card { bottom: 20%; padding: 18px; }
+      .right-copy {
+        left: 20px;
+        right: 20px;
+        bottom: 28px;
+        max-width: none;
+      }
+      .right-copy p { font-size: 13px; }
+      .start { padding: 11px 22px; }
+    }
+  </style>
+</head>
+<body>
+  <section class="hero" id="hero">
+    <div class="base hero-zoom"></div>
+    <div class="reveal" id="revealLayer"></div>
+    <div class="shade"></div>
+
+    <div class="heading">
+      <h1>
+        <span class="line-one hero-anim hero-reveal" style="animation-delay:.25s">MAX's</span>
+        <span class="line-two hero-anim hero-reveal" style="animation-delay:.42s">Archive</span>
+      </h1>
+    </div>
+
+    <div class="personal-card hero-anim hero-fade" style="animation-delay:.62s">
+      <p>今年13岁，爱好是游戏画画和追剧。社恐，是一只常年宅在家里对未来失去希望的网虫（流泪<br>算是二次元吧看动漫但不多</p>
+    </div>
+
+  </section>
+
+  <script>
+    const SPOTLIGHT_R = 260;
+    const revealLayer = document.getElementById("revealLayer");
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const mouse = { x: -999, y: -999 };
+    const smooth = { x: -999, y: -999 };
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    function drawMask() {
+      smooth.x += (mouse.x - smooth.x) * 0.1;
+      smooth.y += (mouse.y - smooth.y) * 0.1;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const gradient = ctx.createRadialGradient(smooth.x, smooth.y, 0, smooth.x, smooth.y, SPOTLIGHT_R);
+      gradient.addColorStop(0, "rgba(255,255,255,1)");
+      gradient.addColorStop(0.4, "rgba(255,255,255,1)");
+      gradient.addColorStop(0.6, "rgba(255,255,255,0.75)");
+      gradient.addColorStop(0.75, "rgba(255,255,255,0.4)");
+      gradient.addColorStop(0.88, "rgba(255,255,255,0.12)");
+      gradient.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(smooth.x, smooth.y, SPOTLIGHT_R, 0, Math.PI * 2);
+      ctx.fill();
+
+      const mask = `url(${canvas.toDataURL()})`;
+      revealLayer.style.maskImage = mask;
+      revealLayer.style.webkitMaskImage = mask;
+      requestAnimationFrame(drawMask);
+    }
+
+    window.addEventListener("mousemove", (event) => {
+      mouse.x = event.clientX;
+      mouse.y = event.clientY;
+    });
+
+    window.addEventListener("touchmove", (event) => {
+      const touch = event.touches[0];
+      if (!touch) return;
+      mouse.x = touch.clientX;
+      mouse.y = touch.clientY;
+    }, { passive: true });
+
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+    drawMask();
+  </script>
+</body>
+</html>

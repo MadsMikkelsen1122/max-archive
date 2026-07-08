@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MAX 三站切换</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #050505;
+        font-family: Inter, "Microsoft YaHei", Arial, sans-serif;
+      }
+
+      .switcher {
+        position: fixed;
+        top: 16px;
+        left: 50%;
+        z-index: 20;
+        display: flex;
+        gap: 8px;
+        padding: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 999px;
+        background: rgba(8, 8, 8, 0.55);
+        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        transform: translateX(-50%);
+      }
+
+      button {
+        min-width: 96px;
+        border: 0;
+        border-radius: 999px;
+        padding: 10px 16px;
+        color: rgba(255, 255, 255, 0.72);
+        background: transparent;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        cursor: pointer;
+        transition: color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+      }
+
+      button:hover {
+        color: white;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      button.active {
+        color: #121212;
+        background: rgba(255, 255, 255, 0.92);
+      }
+
+      button:active {
+        transform: scale(0.97);
+      }
+
+      iframe {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
+        background: #000;
+      }
+
+      @media (max-width: 560px) {
+        .switcher {
+          top: 10px;
+          right: 10px;
+          left: 10px;
+          justify-content: center;
+          transform: none;
+        }
+
+        button {
+          min-width: 0;
+          flex: 1;
+          padding: 10px 8px;
+          font-size: 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="switcher" aria-label="网站切换">
+      <button class="active" data-src="sites/lithos/index.html">地质</button>
+      <button data-src="sites/lumora/index.html">天空</button>
+      <button data-src="sites/organic/index.html">自然</button>
+    </nav>
+
+    <iframe id="preview" src="sites/lithos/index.html" title="网站预览"></iframe>
+
+    <script>
+      const frame = document.querySelector("#preview");
+      const buttons = [...document.querySelectorAll("button[data-src]")];
+
+      buttons.forEach((button) => {
+        button.addEventListener("click", () => {
+          buttons.forEach((item) => item.classList.remove("active"));
+          button.classList.add("active");
+          frame.src = button.dataset.src;
+        });
+      });
+    </script>
+  </body>
+</html>
